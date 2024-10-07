@@ -1,0 +1,38 @@
+class ModelAutomationOperator(CustomBaseOperator):
+    template_fields = (*CustomBaseOperator.template_fields, "model_details", "industry_details", "job_log_id_details")
+
+    def __init__(self, model_details, industry_details, job_log_id_details, **kwargs):
+        super().__init__(**kwargs)
+        self.model_details = model_details
+        self.industry_details = industry_details
+        self.job_log_id_details = job_log_id_details
+
+    def execute(self, context):
+        # Pulling stack value from XCom during execution
+        stack = context['ti'].xcom_pull(task_id='get_target_stack')
+
+        # Now you can access the correct values from the dictionaries
+        self.model = self.model_details["model"]
+        self.industry = self.model_details["industry"]
+        self.server = self.model_details["stacks"][stack]["model_server"]
+        self.port = self.model_details["stacks"][stack]["port"]
+        self.job_log_id = self.job_log_id_details["job_log_id"]
+        self.max_pp_month = self.job_log_id_details["max_pp_month"]
+        self.max_pp_week = self.job_log_id_details["max_pp_week"]
+        self.industry_db_host = self.industry_details["stacks"][stack]["monetdb_host"]
+        self.industry_db_name = self.industry_details["stacks"][stack]["monetdb_name"]
+        self.industry_db_port = self.industry_details["stacks"][stack]["monetdb_port"]
+
+        # Log the values of all the variables
+        self.log.info(f"Model: {self.model}")
+        self.log.info(f"Industry: {self.industry}")
+        self.log.info(f"Server: {self.server}")
+        self.log.info(f"Port: {self.port}")
+        self.log.info(f"Job Log ID: {self.job_log_id}")
+        self.log.info(f"Max PP Month: {self.max_pp_month}")
+        self.log.info(f"Max PP Week: {self.max_pp_week}")
+        self.log.info(f"Industry DB Host: {self.industry_db_host}")
+        self.log.info(f"Industry DB Name: {self.industry_db_name}")
+        self.log.info(f"Industry DB Port: {self.industry_db_port}")
+
+        # Add any task-specific logic here
